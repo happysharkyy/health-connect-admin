@@ -9,7 +9,10 @@ import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import 'font-awesome/css/font-awesome.min.css'
 import '@/assets/iconfont/iconfont.css'
+import VoerroTagsInput from '@voerro/vue-tagsinput';
 
+
+Vue.component('tags-input', VoerroTagsInput);
 Vue.use(ElementUI)
 Vue.use(api)
 Vue.prototype.global = global

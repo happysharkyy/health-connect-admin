@@ -4,13 +4,10 @@
 	<div class="toolbar" style="float:left;padding-top:10px;padding-left:15px;">
 		<el-form :inline="true" :model="filters" :size="size">
 			<el-form-item>
-				<el-input v-model="filters.userName" placeholder="用户名"></el-input>
+				<el-input v-model="filters.title" placeholder="用户名"></el-input>
 			</el-form-item>
 			<el-form-item>
-				<kt-button icon="fa fa-search" :label="$t('action.search')" perms="sys:user:view" type="primary" @click="findPage(null)"/>
-			</el-form-item>
-			<el-form-item>
-				<kt-button icon="fa fa-plus" :label="$t('action.add')" perms="sys:user:add" type="primary" @click="handleAdd" />
+				<kt-button icon="fa fa-search" :label="$t('action.search')" perms="comment:view" type="primary" @click="findPage(null)"/>
 			</el-form-item>
 		</el-form>
 	</div>
@@ -36,7 +33,7 @@
 		</table-column-filter-dialog>
 	</div>
 	<!--表格内容栏-->
-	<kt-table :height="350" permsEdit="sys:user:edit" permsDelete="sys:user:delete"
+	<kt-table :height="350" permsEdit="comment:edit" permsDelete="comment:delete"
 		:data="pageResult" :columns="filterColumns"
 		@findPage="findPage" @handleEdit="handleEdit" @handleDelete="handleDelete">
 	</kt-table>
@@ -96,7 +93,7 @@ export default {
 		return {
 			size: 'small',
 			filters: {
-				userName: ''
+				content: ''
 			},
 			columns: [],
 			filterColumns: [],
@@ -123,7 +120,8 @@ export default {
 				createTime:'',
 				roleId: ''
 			},
-			roles: []
+			content: [],
+            roles:[]
 		}
 	},
 	methods: {
@@ -134,11 +132,11 @@ export default {
 			if(data !== null) {
 				this.pageRequest = data.pageRequest
 			}
-			this.pageRequest.columnFilters = {name: {name:'userName', value:this.filters.userName}}
+			this.pageRequest.columnFilters = {name: {name:'content', value:this.filters.content}}
 			console.log(this.pageRequest.columnFilters)
-			this.$api.user.findPage(this.pageRequest).then((res) => {
+			this.$api.comment.findPage(this.pageRequest).then((res) => {
 				this.pageResult = res.data
-				this.findUserRoles()
+				//this.findUserRoles()
 			}).then(data!=null?data.callback:'')
 		},
 		// 加载用户角色信息
@@ -218,12 +216,12 @@ export default {
 		// 处理表格列过滤显示
       	initColumns: function () {
 			this.columns = [
-				{prop:"id", label:"ID", minWidth:120},
-				{prop:"username", label:"用户名", minWidth:120},
-				{prop:"roleNames", label:"角色", minWidth:70},
-				{prop:"email", label:"邮箱", minWidth:120},
-				{prop:"mobile", label:"手机", minWidth:100},
-				{prop:"statusDetail", label:"状态", minWidth:70},
+				{prop:"id", label:"评论ID", minWidth:120},
+				{prop:"type", label:"评论类型", minWidth:70},
+				{prop:"content", label:"评论内容", minWidth:120},
+				{prop:"userId", label:"创建时间", minWidth:120},
+				{prop:"topicId", label:"目标id", minWidth:120},
+				{prop:"createTime", label:"创建时间", minWidth:150},
 				// {prop:"createBy", label:"创建人", minWidth:120},
 				// {prop:"createTime", label:"创建时间", minWidth:120, formatter:this.dateFormat}
 				// {prop:"lastUpdateBy", label:"更新人", minWidth:100},

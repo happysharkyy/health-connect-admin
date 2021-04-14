@@ -4,13 +4,13 @@
 	<div class="toolbar" style="float:left;padding-top:10px;padding-left:15px;">
 		<el-form :inline="true" :model="filters" :size="size">
 			<el-form-item>
-				<el-input v-model="filters.userName" placeholder="用户名"></el-input>
+				<el-input v-model="filters.title" placeholder="用户名"></el-input>
 			</el-form-item>
 			<el-form-item>
-				<kt-button icon="fa fa-search" :label="$t('action.search')" perms="sys:user:view" type="primary" @click="findPage(null)"/>
+				<kt-button icon="fa fa-search" :label="$t('action.search')" perms="tag:view" type="primary" @click="findPage(null)"/>
 			</el-form-item>
 			<el-form-item>
-				<kt-button icon="fa fa-plus" :label="$t('action.add')" perms="sys:user:add" type="primary" @click="handleAdd" />
+				<kt-button icon="fa fa-plus" :label="$t('action.add')" perms="tag:add" type="primary" @click="handleAdd" />
 			</el-form-item>
 		</el-form>
 	</div>
@@ -36,7 +36,7 @@
 		</table-column-filter-dialog>
 	</div>
 	<!--表格内容栏-->
-	<kt-table :height="350" permsEdit="sys:user:edit" permsDelete="sys:user:delete"
+	<kt-table :height="350" permsEdit="tag:edit" permsDelete="tag:delete"
 		:data="pageResult" :columns="filterColumns"
 		@findPage="findPage" @handleEdit="handleEdit" @handleDelete="handleDelete">
 	</kt-table>
@@ -96,7 +96,7 @@ export default {
 		return {
 			size: 'small',
 			filters: {
-				userName: ''
+				tagName: ''
 			},
 			columns: [],
 			filterColumns: [],
@@ -123,7 +123,8 @@ export default {
 				createTime:'',
 				roleId: ''
 			},
-			roles: []
+			content: [],
+            roles:[]
 		}
 	},
 	methods: {
@@ -134,11 +135,42 @@ export default {
 			if(data !== null) {
 				this.pageRequest = data.pageRequest
 			}
-			this.pageRequest.columnFilters = {name: {name:'userName', value:this.filters.userName}}
+			this.pageRequest.columnFilters = {name: {name:'tagName', value:this.filters.tagName}}
 			console.log(this.pageRequest.columnFilters)
-			this.$api.user.findPage(this.pageRequest).then((res) => {
+			this.$api.tag.findPage(this.pageRequest).then((res) => {
 				this.pageResult = res.data
-				this.findUserRoles()
+                this.content = res.data.content
+                console.log(res)
+                console.log(this.content)
+
+                for(let i =0;i<this.content.length;i++){
+                    let params={
+                        topicid:this.pageResult.content[i].id,
+                        type:'blog'
+                    }
+                    this.$api.star.fetchStarByTopicId(params).then((res) => {
+                        console.log()
+                        console.log('-------------r')
+         
+                        this.$set(this.pageResult.content[i],"star", res.data.length)
+                        //this.pageResult.content[i].push(star)
+                    })
+
+                    let params1={
+                        topicid:this.pageResult.content[i].id,
+                        type:'blog'
+                    }
+                    this.$api.forward.fetchForwardByTopicId(params1).then((res) => {
+                        console.log()
+                        console.log('-------------r')
+         
+                        this.$set(this.pageResult.content[i],"forward", res.data.length)
+                        //this.pageResult.content[i].push(star)
+                    })
+                    
+                }
+                
+				//this.findUserRoles()
 			}).then(data!=null?data.callback:'')
 		},
 		// 加载用户角色信息
@@ -219,11 +251,8 @@ export default {
       	initColumns: function () {
 			this.columns = [
 				{prop:"id", label:"ID", minWidth:120},
-				{prop:"username", label:"用户名", minWidth:120},
-				{prop:"roleNames", label:"角色", minWidth:70},
-				{prop:"email", label:"邮箱", minWidth:120},
-				{prop:"mobile", label:"手机", minWidth:100},
-				{prop:"statusDetail", label:"状态", minWidth:70},
+				{prop:"name", label:"标签名称", minWidth:70},
+				{prop:"topicCount", label:"关联文章数量", minWidth:70},
 				// {prop:"createBy", label:"创建人", minWidth:120},
 				// {prop:"createTime", label:"创建时间", minWidth:120, formatter:this.dateFormat}
 				// {prop:"lastUpdateBy", label:"更新人", minWidth:100},
