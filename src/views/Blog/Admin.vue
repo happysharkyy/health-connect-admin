@@ -120,7 +120,7 @@ export default {
 	
 			// 新增编辑界面数据
 			topic: {
-				title: ''
+				title: '',
 			},
 			title: '', // 标题
       		tags: [],
@@ -133,7 +133,8 @@ export default {
   	// },
 	methods: {
 		handleClose(tag) {
-        this.dynamicTags.splice(this.dynamicTags.indexOf(tag), 1);
+		var that=this;
+        that.tags.splice(that.tags.indexOf(tag), 1);
       },
 
 		showInput() {
@@ -146,7 +147,8 @@ export default {
 		handleInputConfirm() {
 			let inputValue = this.inputValue;
 			if (inputValue) {
-			this.dynamicTags.push(inputValue);
+				this.tags.push(inputValue);
+				console.log(this.tags)
 			}
 			this.inputVisible = false;
 			this.inputValue = '';
@@ -166,6 +168,7 @@ export default {
 			});
 			},
 		fetchTopic(id) {
+
 			this.$api.blog.getTopic(id).then((value) => {
 				this.topic = value.data.topic;
 				console.log(this.topic)
@@ -174,16 +177,23 @@ export default {
 			});
 			},
 			handleUpdate: function () {
+							
+			console.log(this.tags)
+			this.$api.tag.save(this.tags,this.topic.id).then((res) => {
+				console.log(res)
+			});
+			
 			this.topic.content = this.contentEditor.getValue();
-			update(this.topic).then((response) => {
-				const { data } = response;
-				console.log(data);
-				setTimeout(() => {
-				this.$router.push({
-					name: "post-detail",
-					params: { id: data.id },
-				});
-				}, 800);
+			this.$api.blog.save(this.topic).then((res) => {
+				this.editLoading = false
+				if(res.code == 200) {
+					this.$message({ message: '操作成功', type: 'success' })
+					this.dialogVisible = false
+					this.$refs['topic'].resetFields()
+				} else {
+					this.$message({message: '操作失败, ' + res.msg, type: 'error'})
+				}
+				this.findPage(null)
 			});
 			},
 
@@ -236,22 +246,6 @@ export default {
 		handleDelete: function (data) {
 			this.$api.user.batchDelete(data.params).then(data!=null?data.callback:'')
 		},
-		// 显示新增界面
-		handleAdd: function () {
-			this.dialogVisible = true
-			this.operation = false
-			this.dataForm = {
-				id: 0,
-				username: '',
-				password: '',
-				deptId: 1,
-				deptName: '',
-				email: 'test@qq.com',
-				mobile: '13889700023',
-				status: 1,
-				roleId: '',
-			}
-		},
 		// 显示编辑界面
 		handleEdit: function (params) {
 			this.dialogVisible = true
@@ -260,18 +254,18 @@ export default {
 		},
 		// 编辑
 		submitForm: function () {
-			this.$refs.dataForm.validate((valid) => {
+			this.$refs.topic.validate((valid) => {
 				if (valid) {
 					this.$confirm('确认提交吗？', '提示', {}).then(() => {
 						this.editLoading = true
-						let params = Object.assign({}, this.dataForm)
+						let params = Object.assign({}, this.topic)
 						console.log(params)
-						this.$api.user.save(params).then((res) => {
+						this.$api.blog.save(params).then((res) => {
 							this.editLoading = false
 							if(res.code == 200) {
 								this.$message({ message: '操作成功', type: 'success' })
 								this.dialogVisible = false
-								this.$refs['dataForm'].resetFields()
+								this.$refs['topic'].resetFields()
 							} else {
 								this.$message({message: '操作失败, ' + res.msg, type: 'error'})
 							}
