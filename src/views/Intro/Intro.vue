@@ -87,11 +87,19 @@
               </li>
             </ul>
             <ul>
-             
-              <li>
+                          <li>
                 <router-link to="/sys/menu" class="kjfs kjfs-purplee">
                   <span>
                     <i class="fa el-icon-menu fa-2x"></i>
+                  </span>
+                  <span>帖子管理</span>
+                </router-link>
+              </li>
+   
+              <li>
+                <router-link to="/sys/blog" class="kjfs kjfs-purplee">
+                  <span>
+                    <i class="fa el-icon-help fa-2x"></i>
                   </span>
                   <span>菜单管理</span>
                 </router-link>
@@ -121,7 +129,7 @@
               <span class="tit">基于框架</span>springboot + vue2.0全家桶
             </p>
             <p>
-              <span class="tit">主要特色</span>SpringSecurity权限管理
+              <span class="tit">主要特色</span>SpringSecurity+JWT 权限管理
             </p>
             <p>
               <span class="tit">获取渠道</span>
