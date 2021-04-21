@@ -4,13 +4,13 @@
 	<div class="toolbar" style="float:left;padding-top:10px;padding-left:15px;">
 		<el-form :inline="true" :model="filters" :size="size">
 			<el-form-item>
-				<el-input v-model="filters.userName" placeholder="用户名"></el-input>
+				<el-input v-model="filters.title" placeholder="公告名称"></el-input>
 			</el-form-item>
 			<el-form-item>
-				<kt-button icon="fa fa-search" :label="$t('action.search')" perms="sys:user:view" type="primary" @click="findPage(null)"/>
+				<kt-button icon="fa fa-search" :label="$t('action.search')" perms="billborad:view" type="primary" @click="findPage(null)"/>
 			</el-form-item>
 			<el-form-item>
-				<kt-button icon="fa fa-plus" :label="$t('action.add')" perms="sys:user:add" type="primary" @click="handleAdd" />
+				<kt-button icon="fa fa-plus" label="发布公告" perms="billborad:add" type="primary" @click="handleAdd" />
 			</el-form-item>
 		</el-form>
 	</div>
@@ -36,41 +36,21 @@
 		</table-column-filter-dialog>
 	</div>
 	<!--表格内容栏-->
-	<kt-table :height="350" permsEdit="sys:user:edit" permsDelete="sys:user:delete"
+	<kt-table :height="350" permsEdit="billborad:edit" permsDelete="billborad:delete"
 		:data="pageResult" :columns="filterColumns"
 		@findPage="findPage" @handleEdit="handleEdit" @handleDelete="handleDelete">
 	</kt-table>
 	<!--新增编辑界面-->
 	<el-dialog :title="operation?'新增':'编辑'" width="40%" :visible.sync="dialogVisible" :close-on-click-modal="false">
-		<el-form :model="dataForm" label-width="80px" :rules="dataFormRules" ref="dataForm" :size="size"
+		<el-form :model="dataForm" label-width="80px" ref="dataForm" :size="size"
 			label-position="right">
 			<el-form-item label="ID" prop="id" v-if="false">
 				<el-input v-model="dataForm.id" :disabled="true" auto-complete="off"></el-input>
 			</el-form-item>
-			<el-form-item label="用户名" prop="username">
-				<el-input v-model="dataForm.username " auto-complete="off"></el-input>
-			</el-form-item>
-			<el-form-item label="密码" prop="password">
-				<el-input v-model="dataForm.password" type="password" auto-complete="off"></el-input>
-			</el-form-item>
-			<el-form-item label="邮箱" prop="email">
-				<el-input v-model="dataForm.email" auto-complete="off"></el-input>
-			</el-form-item>
-			<el-form-item label="手机" prop="mobile">
-				<el-input v-model="dataForm.mobile" auto-complete="off"></el-input>
-			</el-form-item>
-			<el-form-item label="职业" prop="bio">
-				<el-input v-model="dataForm.bio" auto-complete="off"></el-input>
-			</el-form-item>
-			<el-form-item label="角色" prop="userRoles" v-if="!operation">
-				<el-select v-model="dataForm.roleId" placeholder="请选择"
-					 style="width: 100%;">
-					<el-option v-for="item in roles" :key="item.id"
-						:label="item.remark" :value="item.id">
-					</el-option>
-				</el-select>
-			</el-form-item>
-		</el-form>
+			<el-form-item label="公告名称" prop="content">
+				<el-input v-model="dataForm.content " auto-complete="off"></el-input>
+            </el-form-item>
+        </el-form>
 		<div slot="footer" class="dialog-footer">
 			<el-button :size="size" @click.native="dialogVisible = false">{{$t('action.cancel')}}</el-button>
 			<el-button :size="size" type="primary" @click.native="submitForm" :loading="editLoading">{{$t('action.submit')}}</el-button>
@@ -96,7 +76,7 @@ export default {
 		return {
 			size: 'small',
 			filters: {
-				userName: ''
+				name: ''
 			},
 			columns: [],
 			filterColumns: [],
@@ -106,24 +86,13 @@ export default {
 			operation: false, // true:新增, false:编辑
 			dialogVisible: false, // 新增编辑界面是否显示
 			editLoading: false,
-			dataFormRules: {
-				name: [
-					{ required: true, message: '请输入用户名', trigger: 'blur' }
-				]
-			},
 			// 新增编辑界面数据
 			dataForm: {
 				id: 0,
-				username: '',
-				password: '123456',
-				email: 'test@qq.com',
-				mobile: '13889700023',
-				bio:'自由职业者',
-				status: 1,
-				createTime:'',
-				roleId: ''
+				content:'',
 			},
-			roles: []
+			content: [],
+            roles:[]
 		}
 	},
 	methods: {
@@ -133,24 +102,20 @@ export default {
 			if(data !== null) {
 				this.pageRequest = data.pageRequest
 			}
-			this.pageRequest.columnFilters = {name: {name:'userName', value:this.filters.userName}}
+			this.pageRequest.columnFilters = {name: {name:'name', value:this.filters.name}}
 			console.log(this.pageRequest.columnFilters)
-			this.$api.user.findPage(this.pageRequest).then((res) => {
+			this.$api.billboard.findPage(this.pageRequest).then((res) => {
 				this.pageResult = res.data
-				console.log(res.data)
-				this.findUserRoles()
+                this.content = res.data.content
+                console.log(res)
+                console.log(this.content)  
+				//this.findUserRoles()
 			}).then(data!=null?data.callback:'')
 		},
-		// 加载用户角色信息
-		findUserRoles: function () {
-			this.$api.role.findAll().then((res) => {
-				// 加载角色集合
-				this.roles = res.data	
-			})
-		},
+        
 		// 批量删除
 		handleDelete: function (data) {
-			this.$api.user.batchDelete(data.params).then(data!=null?data.callback:'')
+			this.$api.billboard.batchDelete(data.params).then(data!=null?data.callback:'')
 		},
 		// 显示新增界面
 		handleAdd: function () {
@@ -158,14 +123,7 @@ export default {
 			this.operation = false
 			this.dataForm = {
 				id: 0,
-				username: '',
-				password: '',
-				deptId: 1,
-				deptName: '',
-				email: 'test@qq.com',
-				mobile: '13889700023',
-				status: 1,
-				roleId: '',
+				name:''
 			}
 		},
 		// 显示编辑界面
@@ -174,7 +132,6 @@ export default {
 			this.dialogVisible = true
 			this.operation = false
 			this.dataForm = Object.assign({}, params.row)
-			this.dataForm.roleId = this.dataForm.roleId
 			console.log(this.dataForm)
 		
 		},
@@ -186,7 +143,7 @@ export default {
 						this.editLoading = true
 						let params = Object.assign({}, this.dataForm)
 						console.log(params)
-						this.$api.user.save(params).then((res) => {
+						this.$api.billboard.save(params).then((res) => {
 							this.editLoading = false
 							if(res.code == 200) {
 								this.$message({ message: '操作成功', type: 'success' })
@@ -218,12 +175,10 @@ export default {
 		// 处理表格列过滤显示
       	initColumns: function () {
 			this.columns = [
-				{prop:"id", label:"ID", minWidth:120},
-				{prop:"username", label:"用户名", minWidth:120},
-				{prop:"roleNames", label:"角色", minWidth:70},
-				{prop:"email", label:"邮箱", minWidth:120},
-				{prop:"mobile", label:"手机", minWidth:100},
-				{prop:"statusDetail", label:"状态", minWidth:70}
+				{prop:"id", label:"ID", minWidth:70},
+				{prop:"content", label:"公告内容", minWidth:200},
+				{prop:"createTime", label:"创建时间", minWidth:120},
+                {prop:"statusDetail", label:"状态", minWidth:70}
 			]
 			this.filterColumns = JSON.parse(JSON.stringify(this.columns));
       	}

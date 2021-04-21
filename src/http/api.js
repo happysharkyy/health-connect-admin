@@ -14,6 +14,7 @@ import * as star from './moudules/star'
 import * as forward from './moudules/forward'
 import * as comment from './moudules/comment'
 import * as tag from './moudules/tag'
+import * as billboard from './moudules/billboard'
 
 // 默认全部导出
 export default {
@@ -29,5 +30,6 @@ export default {
     forward,
     star,
     comment,
-    tag
+    tag,
+    billboard
 }

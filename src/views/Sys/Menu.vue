@@ -101,21 +101,6 @@
         <el-form-item v-if="dataForm.type !== 2" label="菜单图标" prop="icon">
           <el-row>
             <el-col :span="22">
-              <!-- <el-popover
-                ref="iconListPopover"
-                placement="bottom-start"
-                trigger="click"
-                popper-class="mod-menu__icon-popover">
-                <div class="mod-menu__icon-list">
-                  <el-button
-                    v-for="(item, index) in dataForm.iconList"
-                    :key="index"
-                    @click="iconActiveHandle(item)"
-                    :class="{ 'is-active': item === dataForm.icon }">
-                    <icon-svg :name="item"></icon-svg>
-                  </el-button>
-                </div>
-              </el-popover> -->
               <el-input v-model="dataForm.icon" v-popover:iconListPopover :readonly="false" placeholder="菜单图标名称（如：fa fa-home fa-lg）" class="icon-list__input"></el-input>
             </el-col>
             <el-col :span="2" class="icon-list__tips">
@@ -201,7 +186,7 @@ export default {
       this.dataForm = {
         id: 0,
         type: 1,
-        typeList: ["目录", "菜单", "按钮"],
+        typeList: ["目录", "菜单"],
         name: "",
         parentId: 0,
         parentName: "",

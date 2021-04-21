@@ -51,3 +51,24 @@ export const saveRoleMenus = (data) => {
         data
     })
 }
+// 保存角色菜单集合
+export const getSelectPermission = () => {
+    return axios({
+        url: '/role/queryAccessByRole/',
+        method: 'post'
+    })
+}
+export const findPermissionByRoleId = (data) => {
+    return axios({
+        url: '/role/findPermissionByRoleId/'+data,
+        method: 'get'
+    })
+}
+export const saveRolePermission = (data) => {
+    return axios({
+        url: '/role/saveRolePermission',
+        method: 'post',
+        data
+    })
+}
+

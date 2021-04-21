@@ -8,7 +8,7 @@
  * 将 2018-09-23T11:54:16.000+0000 格式化成 2018/09/23 11:54:16
  * @param datetime 国际化日期格式
  */
-export function format (datetime) {
+ export function format (datetime) {
   return formatWithSeperator(datetime, "/", ":");
 }
 
