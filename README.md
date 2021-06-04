@@ -4,7 +4,7 @@
 ![https://img.shields.io/badge/vue-2.5.2-brightgreen.svg?longCache=true&style=flat-square](https://img.shields.io/badge/vue-2.5.2-brightgreen.svg?longCache=true&style=flat-square)
 
 ### 简介
-permission是一款前后端分离的后台权限管理系统，基于Spring Boot, Shiro, Vue, Element实现，是我学习Shiro时的练手项目。
+permission是一款前后端分离的后台权限管理系统，基于Spring Boot, Vue, Element实现，是我学习Shiro时的练手项目。
 
 ### 项目源码
 
