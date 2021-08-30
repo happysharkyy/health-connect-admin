@@ -4,13 +4,13 @@
 	<div class="toolbar" style="float:left;padding-top:10px;padding-left:15px;">
 		<el-form :inline="true" :model="filters" :size="size">
 			<el-form-item>
-				<el-input v-model="filters.userName" placeholder="用户名"></el-input>
+				<el-input v-model="filters.title" placeholder="活动名称"></el-input>
 			</el-form-item>
 			<el-form-item>
-				<kt-button icon="fa fa-search" :label="$t('action.search')" perms="sys:user:view" type="primary" @click="findPage(null)"/>
+				<kt-button icon="fa fa-search" :label="$t('action.search')" perms="activity:view" type="primary" @click="findPage(null)"/>
 			</el-form-item>
 			<el-form-item>
-				<kt-button icon="fa fa-plus" :label="$t('action.add')" perms="sys:user:add" type="primary" @click="handleAdd" />
+				<kt-button icon="fa fa-plus" :label="$t('action.add')" perms="activity:add" type="primary" @click="handleAdd" />
 			</el-form-item>
 		</el-form>
 	</div>
@@ -21,8 +21,11 @@
 				<el-tooltip content="刷新" placement="top">
 					<el-button icon="fa fa-refresh" @click="findPage(null)"></el-button>
 				</el-tooltip>
+				<el-tooltip content="列显示" placement="top">
+					<el-button icon="fa fa-filter" @click="displayFilterColumnsDialog"></el-button>
+				</el-tooltip>
 				<el-tooltip content="导出" placement="top">
-					<el-button icon="fa fa-file-excel-o" @click="Export()"></el-button>
+					<el-button icon="fa fa-file-excel-o"></el-button>
 				</el-tooltip>
 				</el-button-group>
 			</el-form-item>
@@ -33,7 +36,7 @@
 		</table-column-filter-dialog>
 	</div>
 	<!--表格内容栏-->
-	<kt-table :height="350" permsEdit="sys:user:edit" permsDelete="sys:user:delete"
+	<kt-table :height="350" permsEdit="activity:edit" permsDelete="activity:delete"
 		:data="pageResult" :columns="filterColumns"
 		@findPage="findPage" @handleEdit="handleEdit" @handleDelete="handleDelete">
 	</kt-table>
@@ -41,32 +44,45 @@
 	<el-dialog :title="operation?'新增':'编辑'" width="40%" :visible.sync="dialogVisible" :close-on-click-modal="false">
 		<el-form :model="dataForm" label-width="80px" :rules="dataFormRules" ref="dataForm" :size="size"
 			label-position="right">
-			<el-form-item label="ID" prop="id" v-if="false">
+            <el-form-item label="ID" prop="id" v-if="false">
 				<el-input v-model="dataForm.id" :disabled="true" auto-complete="off"></el-input>
 			</el-form-item>
-			<el-form-item label="用户名" prop="username">
-				<el-input v-model="dataForm.username " auto-complete="off"></el-input>
+			<el-form-item label="标题" prop="title">
+				<el-input v-model="dataForm.title"  auto-complete="off"></el-input>
 			</el-form-item>
-			<el-form-item label="密码" prop="password">
-				<el-input v-model="dataForm.password" type="password" auto-complete="off"></el-input>
+			<el-form-item label="内容" prop="name">
+				<el-input v-model="dataForm.name " auto-complete="off"></el-input>
 			</el-form-item>
-			<el-form-item label="邮箱" prop="email">
-				<el-input v-model="dataForm.email" auto-complete="off"></el-input>
+			<el-form-item label="库存" prop="stock">
+				<el-input v-model="dataForm.stock " auto-complete="off"></el-input>
 			</el-form-item>
-			<el-form-item label="手机" prop="mobile">
-				<el-input v-model="dataForm.mobile" auto-complete="off"></el-input>
+            <el-form-item label="封面链接" prop="pic">
+				<el-upload
+                class="avatar-uploader"
+                action="#"
+                :show-file-list="false"
+                accept="image/png,image/gif,image/jpg,image/jpeg"
+                :before-upload="handleBeforeUpload">
+                <img v-if="dataForm.pic" :src="url+dataForm.pic" class="avatar">
+                <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+              </el-upload>
 			</el-form-item>
-			<el-form-item label="职业" prop="bio">
-				<el-input v-model="dataForm.bio" auto-complete="off"></el-input>
+			<el-form-item label="开始时间" prop="startTime">
+				<el-date-picker
+					:disabled="operation"
+					v-model="dataForm.startTime"
+					type="datetime"
+					placeholder="选择日期时间">
+				</el-date-picker>
 			</el-form-item>
-			<el-form-item label="角色" prop="userRoles" v-if="!operation">
-				<el-select v-model="dataForm.roleId" placeholder="请选择"
-					 style="width: 100%;">
-					<el-option v-for="item in roles" :key="item.id"
-						:label="item.remark" :value="item.id">
-					</el-option>
-				</el-select>
+			<el-form-item label="结束时间" prop="endTime">
+				<el-date-picker
+					v-model="dataForm.endTime"
+					type="datetime"
+					placeholder="选择日期时间">
+				</el-date-picker>
 			</el-form-item>
+		
 		</el-form>
 		<div slot="footer" class="dialog-footer">
 			<el-button :size="size" @click.native="dialogVisible = false">{{$t('action.cancel')}}</el-button>
@@ -77,12 +93,12 @@
 </template>
 
 <script>
-import { baseUrl } from '@/utils/global'
 import PopupTreeInput from "@/components/PopupTreeInput"
 import KtTable from "@/views/Core/KtTable"
 import KtButton from "@/views/Core/KtButton"
 import TableColumnFilterDialog from "@/views/Core/TableColumnFilterDialog"
 import { format } from "@/utils/datetime"
+import { baseUrl } from '@/utils/global'
 export default {
 	components:{
 		PopupTreeInput,
@@ -94,8 +110,9 @@ export default {
 		return {
 			size: 'small',
 			filters: {
-				userName: ''
+				title: ''
 			},
+			url:'',
 			columns: [],
 			filterColumns: [],
 			pageRequest: { pageNum: 1, pageSize: 10 },
@@ -105,80 +122,87 @@ export default {
 			dialogVisible: false, // 新增编辑界面是否显示
 			editLoading: false,
 			dataFormRules: {
-				name: [
-					{ required: true, message: '请输入用户名', trigger: 'blur' }
+				title: [
+					{ required: true, message: '请输入标题', trigger: 'blur' }
 				]
 			},
 			// 新增编辑界面数据
 			dataForm: {
 				id: 0,
-				username: '',
-				password: '123456',
-				email: 'test@qq.com',
-				mobile: '13889700023',
-				bio:'自由职业者',
-				status: 1,
-				createTime:'',
-				roleId: ''
-			},
-			roles: []
+				title: '',
+				name: '',
+				pic: '',
+				stock:0,
+				startTime: '',
+				endTime: ''
+			}
 		}
 	},
 	methods: {
-		Export(){
-			window.open(baseUrl+"/ums/user/Export");
-		},
-		
 		// 获取分页数据
 		findPage: function (data) {
 			console.log(this.filters)
 			if(data !== null) {
 				this.pageRequest = data.pageRequest
 			}
-			this.pageRequest.columnFilters = {name: {name:'userName', value:this.filters.userName}}
+			this.pageRequest.columnFilters = {name: {name:'title', value:this.filters.title}}
 			console.log(this.pageRequest.columnFilters)
-			this.$api.user.findPage(this.pageRequest).then((res) => {
+			this.$api.activity.findPage(this.pageRequest).then((res) => {
 				this.pageResult = res.data
-				console.log(res.data)
-				this.findUserRoles()
+                console.log(res)
 			}).then(data!=null?data.callback:'')
-		},
-		// 加载用户角色信息
-		findUserRoles: function () {
-			this.$api.role.findAll().then((res) => {
-				// 加载角色集合
-				this.roles = res.data	
-			})
 		},
 		// 批量删除
 		handleDelete: function (data) {
-			this.$api.user.batchDelete(data.params).then(data!=null?data.callback:'')
+			this.$api.activity.batchDelete(data.params).then(data!=null?data.callback:'')
 		},
 		// 显示新增界面
 		handleAdd: function () {
 			this.dialogVisible = true
 			this.operation = false
-			this.dataForm = {
+			this.dataForm= {
 				id: 0,
-				username: '',
-				password: '',
-				deptId: 1,
-				deptName: '',
-				email: 'test@qq.com',
-				mobile: '13889700023',
-				status: 1,
-				roleId: '',
+				title: '',
+				name: '',
+				pic: '',
+				stock:0,
+				startTime: '',
+				endTime: ''
 			}
 		},
+		 handleBeforeUpload (file) {
+			if (!(file.type === 'image/png' || file.type === 'image/gif' || file.type === 'image/jpg' || file.type === 'image/jpeg')) {
+				this.$notify.warning({
+				title: '警告',
+				message: '请上传格式为image/png, image/gif, image/jpg, image/jpeg的图片'
+				})
+			}
+			let size = file.size / 1024 / 1024 / 2
+			if (size > 2) {
+				this.$notify.warning({
+				title: '警告',
+				message: '图片大小必须小于2M'
+				})
+			}
+			let fd = new FormData();//通过form数据格式来传
+			fd.append("picFile", file); //传文件
+			this.$api.upload.upload(fd).then(res => {
+				console.log(res)
+				this.dataForm.pic = res.data
+					this.$notify.success({
+					title: 'Info',
+					message: '封面上传成功!',
+					duration: 3000
+				});
+			})
+			},
 		// 显示编辑界面
 		handleEdit: function (params) {
-			
 			this.dialogVisible = true
 			this.operation = false
 			this.dataForm = Object.assign({}, params.row)
 			this.dataForm.roleId = this.dataForm.roleId
 			console.log(this.dataForm)
-		
 		},
 		// 编辑
 		submitForm: function () {
@@ -188,7 +212,7 @@ export default {
 						this.editLoading = true
 						let params = Object.assign({}, this.dataForm)
 						console.log(params)
-						this.$api.user.save(params).then((res) => {
+						this.$api.activity.save(params).then((res) => {
 							this.editLoading = false
 							if(res.code == 200) {
 								this.$message({ message: '操作成功', type: 'success' })
@@ -220,16 +244,19 @@ export default {
 		// 处理表格列过滤显示
       	initColumns: function () {
 			this.columns = [
-				{prop:"id", label:"ID", minWidth:120},
-				{prop:"username", label:"用户名", minWidth:120},
-				{prop:"roleNames", label:"角色", minWidth:70},
-				{prop:"email", label:"邮箱", minWidth:120},
-				{prop:"mobile", label:"手机", minWidth:100},
-				{prop:"statusDetail", label:"状态", minWidth:70}
+				{prop:"id", label:"ID", minWidth:20},
+				{prop:"title", label:"标题", minWidth:70},
+				{prop:"stock", label:"剩余名额", minWidth:30},
+				{prop:"startTime", label:"活动开始时间", minWidth:100},
+                {prop:"endTime", label:"活动结束时间", minWidth:100},
+                {prop:"createUser", label:"创建人id", minWidth:90}
 			]
 			this.filterColumns = JSON.parse(JSON.stringify(this.columns));
       	}
 	},
+	created() {
+        this.url = baseUrl
+  	},
 	mounted() {
 		this.initColumns()
 	}
@@ -237,5 +264,9 @@ export default {
 </script>
 
 <style scoped>
-
+  .avatar {
+    width: 100px;
+    height: 100px;
+    display: block;
+  }
 </style>

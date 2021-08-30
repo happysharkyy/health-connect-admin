@@ -2,7 +2,7 @@
   <div class="personal-panel">
     <div class="personal-desc" :style="{'background':this.$store.state.app.themeColor}">
         <div class="avatar-container">
-          <img class="avatar" :src="require('@/assets/user.png')" />
+          <img class="avatar" :src="url+user.avatar" />
         </div>  
         <div class="name-role">
           <span class="sender">{{ user.name }} - {{ user.role }}</span>  
@@ -16,7 +16,7 @@
     </div>
     <div class="main-operation">
         <span class="main-operation-item">
-          <el-button size="small" icon="fa fa-male"> 个人中心</el-button>
+          <el-button size="small" icon="fa fa-male" @click="person()"> 个人中心</el-button>
         </span>    
         <span class="main-operation-item">
           <el-button size="small" icon="fa fa-key"> 修改密码</el-button>
@@ -30,6 +30,7 @@
 </template>
 
 <script>
+import { baseUrl } from '@/utils/global'
 import Cookies from "js-cookie"
 export default {
   name: 'PersonalPanel',
@@ -38,7 +39,7 @@ export default {
       type: Object,
       default: {
         name: "admin",
-        avatar: "@/assets/user.png",
+        avatar: '',
         role: "超级管理员",
         registeInfo: "注册时间：2018-12-25 "
       }
@@ -46,9 +47,13 @@ export default {
   },
   data() {
     return {
+      url:'',
     }
   },
   methods: {
+    person(){
+      this.$router.push('/person')
+    },
     // 退出登录
     logout: function() {
       this.$confirm("确认退出吗?", "提示", {
@@ -71,6 +76,7 @@ export default {
     
   },
   mounted() {
+    this.url = baseUrl;
   }
 }
 </script>

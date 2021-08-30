@@ -7,8 +7,9 @@
             <i class="fa fa-server"></i>个人头像
           <p>
           <div class="user_img">
-            <img v-if="newImageUrl" :src="newImageUrl" alt="用户头像" />
-            <img v-else :src="personalInfo.avatar" alt="用户头像" />
+
+            <img  class="avatar"  v-if="newImageUrl" :src="newImageUrl" alt="用户头像" />
+            <img  class="avatar"  v-else :src="url+personalInfo.avatar" alt="用户头像" />
             <el-upload
               class="avatar-uploader"
               action
@@ -16,12 +17,10 @@
               :on-success="handleAvatarSuccess"
               :before-upload="beforeAvatarUpload"
             >
-              <!--  <img v-if="imageUrl" :src="imageUrl" class="avatar"> -->
-              <!-- <i v-else class="el-icon-plus avatar-uploader-icon"></i> -->
               <button
                 type="button"
                 class="el-button filter-item el-button--primary"
-                style="margin-top:10px"
+                style="margin-top:60px"
               >
                 <i class="fa fa-cloud-upload" aria-hidden="true"></i>
                 <span>上传头像</span>
@@ -126,7 +125,7 @@
               <span class="tit">当前版本</span>v1.0.0
             </p>
             <p>
-              <span class="tit">基于框架</span>springboot + vue2.0全家桶
+              <span class="tit">基于框架</span>springcloud + vue2.0全家桶
             </p>
             <p>
               <span class="tit">主要特色</span>SpringSecurity+JWT 权限管理
@@ -134,10 +133,10 @@
             <p>
               <span class="tit">获取渠道</span>
               <span class="gitbox">
-                <a target="_blank" href="https://github.com/goufaning/permission-app.git">
+                <a target="_blank" href="">
                   <el-button type="primary" icon="el-icon-download" size="small">前端</el-button>
                 </a>
-                <a target="_blank" href="https://github.com/goufaning/permission.git">
+                <a target="_blank" href="">
                   <el-button type="primary" icon="el-icon-download" size="small">后端</el-button>
                 </a>
               </span>
@@ -150,14 +149,16 @@
 </template>
 
 <script>
+import { baseUrl } from '@/utils/global'
 import moment from "moment";
 moment.locale("zh-cn");
 export default {
   name: "HomePage",
   data() {
     return {
+      url:'',
       editable: false,
-      newImageUrl: require("@/assets/user.png"),
+      newImageUrl: '',
       personalInfo: {
         id: '',
         username: '',
@@ -192,6 +193,7 @@ export default {
     }
   },
   mounted() {
+    this.url = baseUrl
     var user = sessionStorage.getItem("username")
     this.personalInfo.username = user
     this.$api.user.findByName(user).then((res) => {
@@ -218,7 +220,9 @@ a {
 .avatar {
   width: 80px;
   height: 80px;
+  border-radius: 90px;
 }
+
 $top: top;
 $bottom: bottom;
 $left: left;

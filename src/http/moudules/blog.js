@@ -4,14 +4,7 @@ import axios from '../axios'
  * 用户管理模块
  */
 
-// 保存
-export const save = (data) => {
-    return axios({
-        url: '/post/save',
-        method: 'post',
-        data
-    })
-}
+
 export const findByName = (data) => {
     return axios({
         url: '/post/getByUserName/'+data,
@@ -26,6 +19,21 @@ export const batchDelete = (data) => {
         data
     })
 }
+// 置顶
+export const batchTop = (id) => {
+    return axios({
+        url: '/post/top/'+id,
+        method: 'get',
+      })
+}
+// 保存
+export const save = (data) => {
+    return axios({
+        url: '/post/save',
+        method: 'post',
+        data
+    })
+}
 // 分页查询
 export const findPage = (data) => {
     return axios({
@@ -34,7 +42,6 @@ export const findPage = (data) => {
         data
     })
 }
-// 浏览
 // 浏览
 export function getTopic(id) {
     return axios({

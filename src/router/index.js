@@ -5,6 +5,7 @@ import Login from '@/views/Login'
 import NotFound from '@/views/Error/404'
 import Home from '@/views/Home'
 import Intro from '@/views/Intro/Intro'
+import Index from '@/views/Index'
 import api from '@/http/api'
 import store from '@/store'
 import { getIFramePath, getIFrameUrl } from '@/utils/iframe'
@@ -20,7 +21,16 @@ const router = new Router({
       children: [
         { 
           path: '', 
-          name: '系统介绍', 
+          name: '数据可视化', 
+          component: Index,
+          meta: {
+            icon: 'fa fa-home fa-lg',
+            index: 0
+          }
+        },
+        { 
+          path: '/person', 
+          name: '个人中心', 
           component: Intro,
           meta: {
             icon: 'fa fa-home fa-lg',

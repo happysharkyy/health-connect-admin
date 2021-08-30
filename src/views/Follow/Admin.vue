@@ -4,13 +4,10 @@
 	<div class="toolbar" style="float:left;padding-top:10px;padding-left:15px;">
 		<el-form :inline="true" :model="filters" :size="size">
 			<el-form-item>
-				<el-input v-model="filters.userName" placeholder="用户名"></el-input>
+				<el-input v-model="filters.title" placeholder="被关注人名字"></el-input>
 			</el-form-item>
 			<el-form-item>
-				<kt-button icon="fa fa-search" :label="$t('action.search')" perms="sys:user:view" type="primary" @click="findPage(null)"/>
-			</el-form-item>
-			<el-form-item>
-				<kt-button icon="fa fa-plus" :label="$t('action.add')" perms="sys:user:add" type="primary" @click="handleAdd" />
+				<kt-button icon="fa fa-search" :label="$t('action.search')" perms="follow:view" type="primary" @click="findPage(null)"/>
 			</el-form-item>
 		</el-form>
 	</div>
@@ -21,8 +18,11 @@
 				<el-tooltip content="刷新" placement="top">
 					<el-button icon="fa fa-refresh" @click="findPage(null)"></el-button>
 				</el-tooltip>
+				<el-tooltip content="列显示" placement="top">
+					<el-button icon="fa fa-filter" @click="displayFilterColumnsDialog"></el-button>
+				</el-tooltip>
 				<el-tooltip content="导出" placement="top">
-					<el-button icon="fa fa-file-excel-o" @click="Export()"></el-button>
+					<el-button icon="fa fa-file-excel-o"></el-button>
 				</el-tooltip>
 				</el-button-group>
 			</el-form-item>
@@ -33,60 +33,24 @@
 		</table-column-filter-dialog>
 	</div>
 	<!--表格内容栏-->
-	<kt-table :height="350" permsEdit="sys:user:edit" permsDelete="sys:user:delete"
+	<kt-table01 :height="350"  permsDelete="follow:delete"
 		:data="pageResult" :columns="filterColumns"
-		@findPage="findPage" @handleEdit="handleEdit" @handleDelete="handleDelete">
-	</kt-table>
-	<!--新增编辑界面-->
-	<el-dialog :title="operation?'新增':'编辑'" width="40%" :visible.sync="dialogVisible" :close-on-click-modal="false">
-		<el-form :model="dataForm" label-width="80px" :rules="dataFormRules" ref="dataForm" :size="size"
-			label-position="right">
-			<el-form-item label="ID" prop="id" v-if="false">
-				<el-input v-model="dataForm.id" :disabled="true" auto-complete="off"></el-input>
-			</el-form-item>
-			<el-form-item label="用户名" prop="username">
-				<el-input v-model="dataForm.username " auto-complete="off"></el-input>
-			</el-form-item>
-			<el-form-item label="密码" prop="password">
-				<el-input v-model="dataForm.password" type="password" auto-complete="off"></el-input>
-			</el-form-item>
-			<el-form-item label="邮箱" prop="email">
-				<el-input v-model="dataForm.email" auto-complete="off"></el-input>
-			</el-form-item>
-			<el-form-item label="手机" prop="mobile">
-				<el-input v-model="dataForm.mobile" auto-complete="off"></el-input>
-			</el-form-item>
-			<el-form-item label="职业" prop="bio">
-				<el-input v-model="dataForm.bio" auto-complete="off"></el-input>
-			</el-form-item>
-			<el-form-item label="角色" prop="userRoles" v-if="!operation">
-				<el-select v-model="dataForm.roleId" placeholder="请选择"
-					 style="width: 100%;">
-					<el-option v-for="item in roles" :key="item.id"
-						:label="item.remark" :value="item.id">
-					</el-option>
-				</el-select>
-			</el-form-item>
-		</el-form>
-		<div slot="footer" class="dialog-footer">
-			<el-button :size="size" @click.native="dialogVisible = false">{{$t('action.cancel')}}</el-button>
-			<el-button :size="size" type="primary" @click.native="submitForm" :loading="editLoading">{{$t('action.submit')}}</el-button>
-		</div>
-	</el-dialog>
+		@findPage="findPage" @handleDelete="handleDelete">
+	</kt-table01>
+
   </div>
 </template>
 
 <script>
-import { baseUrl } from '@/utils/global'
 import PopupTreeInput from "@/components/PopupTreeInput"
-import KtTable from "@/views/Core/KtTable"
+import KtTable01 from "@/views/Core/KtTable01"
 import KtButton from "@/views/Core/KtButton"
 import TableColumnFilterDialog from "@/views/Core/TableColumnFilterDialog"
 import { format } from "@/utils/datetime"
 export default {
 	components:{
 		PopupTreeInput,
-		KtTable,
+		KtTable01,
 		KtButton,
 		TableColumnFilterDialog
 	},
@@ -94,7 +58,7 @@ export default {
 		return {
 			size: 'small',
 			filters: {
-				userName: ''
+				toUserName: ''
 			},
 			columns: [],
 			filterColumns: [],
@@ -105,70 +69,40 @@ export default {
 			dialogVisible: false, // 新增编辑界面是否显示
 			editLoading: false,
 			dataFormRules: {
-				name: [
-					{ required: true, message: '请输入用户名', trigger: 'blur' }
+				title: [
+					{ required: true, message: '请输入标题', trigger: 'blur' }
 				]
 			},
 			// 新增编辑界面数据
 			dataForm: {
 				id: 0,
-				username: '',
-				password: '123456',
-				email: 'test@qq.com',
-				mobile: '13889700023',
-				bio:'自由职业者',
-				status: 1,
-				createTime:'',
-				roleId: ''
-			},
-			roles: []
+				content: '',
+				author: '佚名',
+			}
 		}
 	},
 	methods: {
-		Export(){
-			window.open(baseUrl+"/ums/user/Export");
-		},
-		
 		// 获取分页数据
 		findPage: function (data) {
 			console.log(this.filters)
 			if(data !== null) {
 				this.pageRequest = data.pageRequest
 			}
-			this.pageRequest.columnFilters = {name: {name:'userName', value:this.filters.userName}}
+			this.pageRequest.columnFilters = {name: {name:'toUserName', value:this.filters.toUserName}}
 			console.log(this.pageRequest.columnFilters)
-			this.$api.user.findPage(this.pageRequest).then((res) => {
+			this.$api.follow.findPage(this.pageRequest).then((res) => {
 				this.pageResult = res.data
-				console.log(res.data)
-				this.findUserRoles()
+                console.log(res)
 			}).then(data!=null?data.callback:'')
-		},
-		// 加载用户角色信息
-		findUserRoles: function () {
-			this.$api.role.findAll().then((res) => {
-				// 加载角色集合
-				this.roles = res.data	
-			})
 		},
 		// 批量删除
 		handleDelete: function (data) {
-			this.$api.user.batchDelete(data.params).then(data!=null?data.callback:'')
+			this.$api.follow.batchDelete(data.params).then(data!=null?data.callback:'')
 		},
 		// 显示新增界面
 		handleAdd: function () {
 			this.dialogVisible = true
 			this.operation = false
-			this.dataForm = {
-				id: 0,
-				username: '',
-				password: '',
-				deptId: 1,
-				deptName: '',
-				email: 'test@qq.com',
-				mobile: '13889700023',
-				status: 1,
-				roleId: '',
-			}
 		},
 		// 显示编辑界面
 		handleEdit: function (params) {
@@ -188,7 +122,7 @@ export default {
 						this.editLoading = true
 						let params = Object.assign({}, this.dataForm)
 						console.log(params)
-						this.$api.user.save(params).then((res) => {
+						this.$api.follow.save(params).then((res) => {
 							this.editLoading = false
 							if(res.code == 200) {
 								this.$message({ message: '操作成功', type: 'success' })
@@ -220,12 +154,9 @@ export default {
 		// 处理表格列过滤显示
       	initColumns: function () {
 			this.columns = [
-				{prop:"id", label:"ID", minWidth:120},
-				{prop:"username", label:"用户名", minWidth:120},
-				{prop:"roleNames", label:"角色", minWidth:70},
-				{prop:"email", label:"邮箱", minWidth:120},
-				{prop:"mobile", label:"手机", minWidth:100},
-				{prop:"statusDetail", label:"状态", minWidth:70}
+				{prop:"id", label:"ID", minWidth:20},
+				{prop:"fromUserName", label:"关注人", minWidth:70},
+				{prop:"toUserName", label:"被关注人", minWidth:100}
 			]
 			this.filterColumns = JSON.parse(JSON.stringify(this.columns));
       	}

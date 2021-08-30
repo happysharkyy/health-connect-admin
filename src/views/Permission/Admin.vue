@@ -5,7 +5,6 @@
         <el-col :span="10">
           <el-card
             shadow="never"
-            
             style="border: none;"
           >
 
@@ -143,7 +142,7 @@
 export default {
 
   beforeMount() {},
-  mounted() {
+  created() {
     this.getRolePageList();
   },
 
@@ -245,26 +244,20 @@ export default {
       localStorage.setItem("name", this.name);
         this.$api.role.findPermissionByRoleId(this.tableId).then(res => {
             this.currentRoleMenus = res.data
-            console.log(res)
             this.$refs.menuTree.setCheckedNodes(res.data)
         })
-
-
     },
     statusFormatter(row) {
       if (row.status) return "有效";
       return "无效";
     },
-
-
     getRolePageList() {
-        this.menuLoading = true
-            this.$api.role.getSelectPermission().then(res => {
+      this.menuLoading = true
+      this.$api.role.getSelectPermission().then(res => {
             this.menuData = res.data
             this.menuLoading = false
-        });
+      });
       this.tableId = 0;
-      // let query = Object.assign({}, this.roleForm, {pageSize: this.pageSize, pageNum: this.pageNum})
       const params = {};
       params.columnFilters =   {name: {name:'userName', value:''}};
       params.pageNum = this.pageNum;
@@ -280,6 +273,7 @@ export default {
             this.$refs.table.setCurrentRow(this.roleData[0]);
         }
       });
+      this.handleSelectionChange(0);
     },
     handleMenuCheckChange(data, check, subCheck) {
         if(check) {
@@ -317,20 +311,17 @@ export default {
     },
     saveTree(){
         let roleId = localStorage.getItem("roleId")
-        if('superadmin' ==localStorage.getItem("name")) {
-            this.$message({message: '超级管理员拥有所有权限，不允许修改！', type: 'error'})
-            return
-        }
+        // if('superadmin' ==localStorage.getItem("name")) {
+        //     this.$message({message: '超级管理员拥有所有权限，不允许修改！', type: 'error'})
+        //     return
+        // }
         this.authLoading = true
         let checkedNodes = this.$refs.menuTree.getCheckedNodes(false, false)
-        console.log(checkedNodes)
-
         let roleMenus = []
         for(let i=0, len=checkedNodes.length; i<len; i++) {
             let roleMenu = { roleId:roleId, permissionId:checkedNodes[i].id }
             roleMenus.push(roleMenu)
         }
-          console.log(roleMenus)
         this.$api.role.saveRolePermission(roleMenus).then((res) => {
             if(res.code == 200) {
                 this.$message({ message: '操作成功', type: 'success' })

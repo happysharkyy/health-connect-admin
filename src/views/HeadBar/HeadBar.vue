@@ -16,7 +16,7 @@
         </el-menu-item>
         <el-menu-item index="5" v-popover:popover-personal>
           <!-- 用户信息 -->
-          <span class="user-info"><img :src="user.avatar" />{{user.name}}</span>
+          <span class="user-info"><img :src="url+user.avatar" />{{user.name}}</span>
           <el-popover ref="popover-personal" placement="bottom-end" trigger="click" :visible-arrow="false">
             <personal-panel :user="user"></personal-panel>
           </el-popover>
@@ -27,6 +27,7 @@
 </template>
 
 <script>
+import { baseUrl } from '@/utils/global'
 import { mapState } from 'vuex'
 import mock from "@/mock/index"
 import Hamburger from "@/components/Hamburger"
@@ -54,6 +55,7 @@ export default {
         role: "超级管理员",
         registeInfo: "注册时间：2018-12-20 "
       },
+      url:'',
       activeIndex: '1',
       langVisible: false
     }
@@ -81,11 +83,13 @@ export default {
     }
   },
   mounted() {
+    this.url = baseUrl;
     this.sysName = "后台管理系统"
-    var user = sessionStorage.getItem("username")
-    if (user) {
-      this.user.name = user
-      this.user.avatar = require("@/assets/user.png")
+    var username = sessionStorage.getItem("username")
+    var avatar = sessionStorage.getItem("avatar")
+    if (username) {
+      this.user.name = username
+      this.user.avatar = avatar
     }
   },
   computed:{

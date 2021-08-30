@@ -5,9 +5,10 @@ import axios from '../axios'
  */
 
 // 保存
-export const save = (data,topicId) => {
+// 保存
+export const save = (data) => {
     return axios({
-        url: '/billboard/save/'+topicId,
+        url: '/billboard/save',
         method: 'post',
         data
     })

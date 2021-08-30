@@ -41,6 +41,7 @@ export default {
   watch: {
     $route: 'handleRoute'
   },
+  
   created () {
     this.handleRoute(this.$route)
   },

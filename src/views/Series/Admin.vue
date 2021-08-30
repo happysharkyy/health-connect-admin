@@ -4,10 +4,10 @@
 	<div class="toolbar" style="float:left;padding-top:10px;padding-left:15px;">
 		<el-form :inline="true" :model="filters" :size="size">
 			<el-form-item>
-				<el-input v-model="filters.title" placeholder="用户名"></el-input>
+				<el-input v-model="filters.title" placeholder="合辑标题"></el-input>
 			</el-form-item>
 			<el-form-item>
-				<kt-button icon="fa fa-search" :label="$t('action.search')" perms="topic:view" type="primary" @click="findPage(null)"/>
+				<kt-button icon="fa fa-search" :label="$t('action.search')" perms="series:view" type="primary" @click="findPage(null)"/>
 			</el-form-item>
 		</el-form>
 	</div>
@@ -18,8 +18,11 @@
 				<el-tooltip content="刷新" placement="top">
 					<el-button icon="fa fa-refresh" @click="findPage(null)"></el-button>
 				</el-tooltip>
+				<el-tooltip content="列显示" placement="top">
+					<el-button icon="fa fa-filter" @click="displayFilterColumnsDialog"></el-button>
+				</el-tooltip>
 				<el-tooltip content="导出" placement="top">
-					<el-button icon="fa fa-file-excel-o" @click="Export()"></el-button>
+					<el-button icon="fa fa-file-excel-o"></el-button>
 				</el-tooltip>
 				</el-button-group>
 			</el-form-item>
@@ -30,10 +33,10 @@
 		</table-column-filter-dialog>
 	</div>
 	<!--表格内容栏-->
-	<kt-table-02 :height="350" permsEdit="topic:edit" permsDelete="topic:delete"  permsTop="topic:top"
+	<kt-table :height="350" permsEdit="series:edit" permsDelete="series:delete"
 		:data="pageResult" :columns="filterColumns"
-		@findPage="findPage" @handleEdit="handleEdit" @handleDelete="handleDelete" @handleTop="handleTop">
-	</kt-table-02>
+		@findPage="findPage" @handleEdit="handleEdit" @handleDelete="handleDelete">
+	</kt-table>
 	<!--新增编辑界面-->
 	<el-dialog :title="operation='编辑'" width="80%" :visible.sync="dialogVisible" :close-on-click-modal="false">
 		<el-form :model="topic" ref="topic" class="demo-topic">
@@ -56,6 +59,7 @@
 				{{tag}}
 				</el-tag>
 
+
 				<el-input
 					class="input-new-tag"
 					v-if="inputVisible"
@@ -68,6 +72,15 @@
 					</el-input>
 					<el-button v-else class="button-new-tag" size="small" @click="showInput">+ New Tag</el-button>
 				</div>
+			<el-upload
+                class="avatar-uploader"
+                action="#"
+                :show-file-list="false"
+                accept="image/png,image/gif,image/jpg,image/jpeg"
+                :before-upload="handleBeforeUpload">
+                <img v-if="topic.img" :src="url+topic.img" class="avatar">
+                <i v-else style="width:100px;50px" class="el-icon-plus avatar-uploader-icon"></i>
+              </el-upload>
               <el-form-item class="mt-3" style="margin-top:10px">
                 <el-button type="primary" @click="handleUpdate()"
                   >更新
@@ -84,8 +97,9 @@
 </template>                                                                                                                                                                 
 
 <script>
+import { baseUrl } from '@/utils/global'
 import PopupTreeInput from "@/components/PopupTreeInput"
-import KtTable02 from "@/views/Core/KtTable02"
+import KtTable from "@/views/Core/KtTable"
 import KtButton from "@/views/Core/KtButton"
 import TableColumnFilterDialog from "@/views/Core/TableColumnFilterDialog"
 import { format } from "@/utils/datetime"
@@ -95,7 +109,7 @@ import 'vditor/dist/index.css'
 export default {
 	components:{
 		PopupTreeInput,
-		KtTable02,
+		KtTable,
 		KtButton,
 		TableColumnFilterDialog
 	},
@@ -105,6 +119,7 @@ export default {
 			filters: {
 				title: ''
 			},
+            url:'',
 			columns: [], inputVisible: false,
         	inputValue: '',
 			filterColumns: [],
@@ -121,18 +136,39 @@ export default {
 			},
 			title: '', // 标题
       		tags: [],
-			content: [],
-            roles:[]
+			content: []
 		}
 	},
-	// created() {
-    // 	this.fetchTopic();
-  	// },
+	created() {
+        this.url = baseUrl
+  	},
 	methods: {
-		Export(){
-			window.open(baseUrl+"/post/Export");
-		},
-		
+         handleBeforeUpload (file) {
+      if (!(file.type === 'image/png' || file.type === 'image/gif' || file.type === 'image/jpg' || file.type === 'image/jpeg')) {
+        this.$notify.warning({
+          title: '警告',
+          message: '请上传格式为image/png, image/gif, image/jpg, image/jpeg的图片'
+        })
+      }
+      let size = file.size / 1024 / 1024 / 2
+      if (size > 2) {
+        this.$notify.warning({
+          title: '警告',
+          message: '图片大小必须小于2M'
+        })
+      }
+      let fd = new FormData();//通过form数据格式来传
+      fd.append("picFile", file); //传文件
+      upload(fd).then(res => {
+          console.log(res)
+          this.ruleForm.img = res.data
+              this.$notify.success({
+              title: 'Info',
+              message: '封面上传成功!',
+              duration: 3000
+          });
+      })
+    },
 		handleClose(tag) {
 		var that=this;
         that.tags.splice(that.tags.indexOf(tag), 1);
@@ -144,10 +180,7 @@ export default {
 			this.$refs.saveTagInput.$refs.input.focus();
 			});
 		},
-		handleTop(params){
-			this.$api.blog.batchTop(params.row.id).then();
-			alert("置顶成功！")
-		},
+
 		handleInputConfirm() {
 			let inputValue = this.inputValue;
 			if (inputValue) {
@@ -165,7 +198,7 @@ export default {
 				preview: {
 				hljs: { style: "monokai" },
 				},
-				mode: "sv",
+				mode: "wysiwyg",
 				after: () => {
 				this.contentEditor.setValue(md);
 				},
@@ -173,7 +206,7 @@ export default {
 			},
 		fetchTopic(id) {
 
-			this.$api.blog.getTopic(id).then((value) => {
+			this.$api.series.getTopic(id).then((value) => {
 				this.topic = value.data.topic;
 				console.log(this.topic)
 				this.tags = value.data.tags.map(tag => tag.name);
@@ -183,12 +216,12 @@ export default {
 			handleUpdate: function () {
 							
 			console.log(this.tags)
-			this.$api.tag.save(this.tags,this.topic.id).then((res) => {
+			this.$api.series.save(this.tags,this.topic.id).then((res) => {
 				console.log(res)
 			});
 			
 			this.topic.content = this.contentEditor.getValue();
-			this.$api.blog.save(this.topic).then((res) => {
+			this.$api.series.save(this.topic).then((res) => {
 				this.editLoading = false
 				if(res.code == 200) {
 					this.$message({ message: '操作成功', type: 'success' })
@@ -214,41 +247,15 @@ export default {
 			}
 			this.pageRequest.columnFilters = {name: {name:'title', value:this.filters.title}}
 			console.log(this.pageRequest.columnFilters)
-			this.$api.blog.findPage(this.pageRequest).then((res) => {
+			this.$api.series.findPage(this.pageRequest).then((res) => {
 				this.pageResult = res.data
-                this.content = res.data.content
-                console.log(res)
-                console.log(this.content)
-
-                for(let i =0;i<this.content.length;i++){
-                    let params={
-                        topicid:this.pageResult.content[i].id,
-                        type:'blog'
-                    }
-                    this.$api.star.fetchStarByTopicId(params).then((res) => {
-                        this.$set(this.pageResult.content[i],"star", res.data.length)
-                        //this.pageResult.content[i].push(star)
-                    })
-
-                    let params1={
-                        topicid:this.pageResult.content[i].id,
-                        type:'blog'
-                    }
-                    this.$api.forward.fetchForwardByTopicId(params1).then((res) => {
-         
-                        this.$set(this.pageResult.content[i],"forward", res.data.length)
-                        //this.pageResult.content[i].push(star)
-                    })
-                    
-                }
-                
 				//this.findUserRoles()
 			}).then(data!=null?data.callback:'')
 		},
 
 		// 批量删除
 		handleDelete: function (data) {
-			this.$api.blog.batchDelete(data.params).then(data!=null?data.callback:'')
+			this.$api.user.batchDelete(data.params).then(data!=null?data.callback:'')
 		},
 		// 显示编辑界面
 		handleEdit: function (params) {
@@ -264,7 +271,7 @@ export default {
 						this.editLoading = true
 						let params = Object.assign({}, this.topic)
 						console.log(params)
-						this.$api.blog.save(params).then((res) => {
+						this.$api.series.save(params).then((res) => {
 							this.editLoading = false
 							if(res.code == 200) {
 								this.$message({ message: '操作成功', type: 'success' })
@@ -296,12 +303,11 @@ export default {
 		// 处理表格列过滤显示
       	initColumns: function () {
 			this.columns = [
-				{prop:"id", label:"帖子ID", minWidth:120},
-				{prop:"title", label:"标题", minWidth:120},
-				{prop:"userId", label:"用户ID", minWidth:120},
-				{prop:"createTime", label:"创建时间", minWidth:150},
-				{prop:"star", label:"点赞数", minWidth:50},
-				{prop:"forward", label:"转发量", minWidth:50},
+				{prop:"id", label:"合辑ID", minWidth:70},
+				{prop:"title", label:"标题", minWidth:70},
+				{prop:"userId", label:"用户ID", minWidth:90},
+				{prop:"createTime", label:"创建时间", minWidth:120},
+                {prop:"img", label:"封面图片存放位置", minWidth:150}
 				// {prop:"createBy", label:"创建人", minWidth:120},
 				// {prop:"createTime", label:"创建时间", minWidth:120, formatter:this.dateFormat}
 				// {prop:"lastUpdateBy", label:"更新人", minWidth:100},
