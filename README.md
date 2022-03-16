@@ -25,7 +25,7 @@ permission是一款前后端分离的后台权限管理系统，基于Spring Boo
 
 2. IDEA 安装lombok插件
 
-3. 新建MySQL（版本5.7.x）数据库，导入[SQL](https://github.com/goufaning/permission/tree/master/sql.table.sql)文件
+3. 新建MySQL（版本8.0.18）数据库，导入[SQL](https://github.com/goufaning/permission/tree/master/sql.table.sql)文件
 
 4. IDEA导入项目
 
@@ -55,8 +55,6 @@ permission是一款前后端分离的后台权限管理系统，基于Spring Boo
 * 字典管理：新建字典，修改字典，删除字典，查询字典
 
 ### 技术选型
-
-### 系统展示
 
 
 
